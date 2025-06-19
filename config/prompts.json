@@ -1,0 +1,27 @@
+[
+  {
+    "id": "spark_dialog", 
+    "title": "Spark Dialog Bubble + Circuit",
+    "prompt": "Minimalist, futuristic Chrome extension icon. A speech bubble representing conversation, overlaid with a glowing electric spark and subtle circuit or neural network lines inside or around the bubble. Neon blue and indigo gradient, crisp vector style, modern and sophisticated, high contrast. No text or letters. Suitable for small sizes."
+  },
+  {
+    "id": "magic_wand",
+    "title": "Magic Wand + Text Cursor", 
+    "prompt": "Minimalist, modern Chrome extension icon. A sleek magic wand crossing a classic text cursor (I-beam), with small glowing pixel stars or sparkles suggesting enhancement or transformation. Futuristic color scheme with black, white, and neon blue accents. High-contrast, crisp vector style, easily recognizable at small sizes, no text or letters."
+  },
+  {
+    "id": "terminal_spark",
+    "title": "Terminal/Prompt Brackets + Spark",
+    "prompt": "Modern, futuristic Chrome extension icon. Features classic prompt brackets (e.g., > or >>>) inside a rounded rectangle or terminal window, with an electric blue spark or glowing lines to suggest AI generation or automation. Indigo and blue gradient, subtle 3D shadow, minimalist vector style, high visibility at small sizes. No text or letters."
+  },
+  {
+    "id": "ai_circuit",
+    "title": "AI Circuit Node + Text",
+    "prompt": "Futuristic, minimalist Chrome extension icon. Abstract neural node or circuit motif, with small stylized text glyphs or a subtle P shape integrated, suggesting prompt and AI intelligence. Silver, blue, and holographic gradients, crisp vector lines, modern and sophisticated, easily recognizable at small sizes. No full words or obvious letters."
+  },
+  {
+    "id": "bubble_circuit",
+    "title": "Bubble + Circuit (Combined, Default Suggestion)",
+    "prompt": "Minimalist, futuristic Chrome extension icon, featuring a speech bubble merged with a glowing circuit or neural network motif. Neon blue and indigo gradients, subtle spark or glow, crisp vector lines. Modern, sophisticated, suitable for an AI prompt assistant. High-contrast, easily recognizable at small sizes. No text or letters."
+  }
+]
