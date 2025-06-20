@@ -1,12 +1,16 @@
 # app.py - LogoNico Flask Web Interface
-from flask import Flask, render_template, jsonify, send_file, Response, stream_with_context
+from flask import Flask, render_template, jsonify, send_file, Response, stream_with_context, request
 from pathlib import Path
 import json
 import re
 from datetime import datetime
 import os
+import shutil
+import threading
 from flask_cors import CORS
 from src.utils.progress_utils import read_progress
+from src.core.pipeline import GenerationPipeline
+from src.core.models import model_registry
 import time, os
 
 app = Flask(__name__)
@@ -279,6 +283,303 @@ def delete_image(filename):
     
     except Exception as e:
         return jsonify({'error': f'Failed to delete image: {str(e)}'}), 500
+
+# ================================
+# Workflow Management Endpoints
+# ================================
+
+@app.route('/api/workflow/models')
+def get_available_models():
+    """Get list of available models"""
+    try:
+        # Initialize model registry to get available models
+        model_registry.initialize()
+        models = []
+        for provider, generator in model_registry.get_all_generators().items():
+            if generator:  # If generator is working
+                for model in generator.get_available_models():
+                    models.append(f"{provider}:{model}")
+        return jsonify(models)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/workflow/prompt-files')
+def get_prompt_files():
+    """Get list of available prompt files"""
+    try:
+        config_dir = PROJECT_ROOT / "config"
+        prompt_files = []
+        if config_dir.exists():
+            for file in config_dir.glob("*.json"):
+                if file.stem != "prompts":  # Exclude default
+                    prompt_files.append(file.name)
+        return jsonify(prompt_files)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/workflow/prompts/<filename>')
+def get_prompts_from_file(filename):
+    """Get prompts from a specific prompt file"""
+    try:
+        if filename == "default":
+            file_path = PROJECT_ROOT / "config" / "prompts.json"
+        else:
+            file_path = PROJECT_ROOT / "config" / filename
+        
+        if not file_path.exists():
+            return jsonify({'error': 'File not found'}), 404
+        
+        with open(file_path, 'r', encoding='utf-8') as f:
+            prompts = json.load(f)
+        
+        return jsonify(prompts)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/workflow/archive', methods=['POST'])
+def archive_current_images():
+    """Archive current images before starting new workflow"""
+    try:
+        # Create archive directory with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        archive_dir = OUTPUT_DIR / "archive" / timestamp
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        
+        archived_count = 0
+        
+        # Archive raw images
+        if RAW_DIR.exists():
+            for img_file in RAW_DIR.iterdir():
+                if img_file.is_file() and img_file.suffix.lower() in ['.png', '.jpg', '.jpeg', '.svg']:
+                    shutil.move(str(img_file), str(archive_dir / img_file.name))
+                    archived_count += 1
+        
+        # Archive processed images
+        if PROCESSED_DIR.exists():
+            processed_archive = archive_dir / "processed"
+            processed_archive.mkdir(exist_ok=True)
+            for img_file in PROCESSED_DIR.iterdir():
+                if img_file.is_file():
+                    shutil.move(str(img_file), str(processed_archive / img_file.name))
+        
+        # Archive icon files
+        if ICONS_DIR.exists():
+            icons_archive = archive_dir / "icons"
+            icons_archive.mkdir(exist_ok=True)
+            for img_file in ICONS_DIR.iterdir():
+                if img_file.is_file():
+                    shutil.move(str(img_file), str(icons_archive / img_file.name))
+        
+        return jsonify({
+            'success': True, 
+            'archived_count': archived_count,
+            'archive_path': str(archive_dir)
+        })
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to archive images: {str(e)}'}), 500
+
+@app.route('/api/workflow/start', methods=['POST'])
+def start_workflow():
+    """Start a new generation workflow"""
+    try:
+        config = request.get_json()
+        
+        # Parse configuration
+        models = None
+        if config.get('models') == 'specific' and config.get('specificModels'):
+            models = config['specificModels']
+        
+        prompts = None
+        if config.get('prompts') == 'specific' and config.get('specificPrompts'):
+            prompts = config['specificPrompts']
+        
+        remove_bg = config.get('removeBackground', True)
+        create_ico = config.get('createICO', True)
+        
+        # Start workflow in background thread
+        def run_workflow():
+            try:
+                pipeline = GenerationPipeline()
+                if pipeline.initialize():
+                    pipeline.run_complete_pipeline(
+                        models=models,
+                        prompts=prompts,
+                        remove_bg=remove_bg,
+                        create_ico=create_ico
+                    )
+            except Exception as e:
+                print(f"Workflow execution error: {e}")
+        
+        # Start workflow in background
+        workflow_thread = threading.Thread(target=run_workflow, daemon=True)
+        workflow_thread.start()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Workflow started successfully',
+            'config': config
+        })
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to start workflow: {str(e)}'}), 500
+
+# ================================
+# Image Processing Endpoints
+# ================================
+
+@app.route('/api/images/download', methods=['POST'])
+def download_selected_images():
+    """Create and download a ZIP file containing selected images"""
+    try:
+        data = request.get_json()
+        image_ids = data.get('imageIds', [])
+        
+        if not image_ids:
+            return jsonify({'error': 'No images selected'}), 400
+        
+        import zipfile
+        import io
+        
+        # Create a ZIP file in memory
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            # Get all images and filter by selected IDs
+            if RAW_DIR.exists():
+                for img_file in RAW_DIR.iterdir():
+                    if img_file.is_file() and img_file.suffix.lower() in ['.png', '.jpg', '.jpeg', '.svg']:
+                        # Check if this image ID is in the selected list
+                        img_id = img_file.stem
+                        if img_id in image_ids:
+                            # Add image to ZIP
+                            zip_file.write(img_file, img_file.name)
+            
+            # Also include processed versions if they exist
+            if PROCESSED_DIR.exists():
+                processed_folder_added = False
+                for img_file in PROCESSED_DIR.iterdir():
+                    if img_file.is_file():
+                        # Check if this corresponds to a selected image
+                        img_id = img_file.stem
+                        if img_id in image_ids:
+                            if not processed_folder_added:
+                                processed_folder_added = True
+                            zip_file.write(img_file, f"processed/{img_file.name}")
+            
+            # Also include ICO versions if they exist
+            if ICONS_DIR.exists():
+                icons_folder_added = False
+                for img_file in ICONS_DIR.iterdir():
+                    if img_file.is_file() and img_file.suffix.lower() == '.ico':
+                        # Check if this corresponds to a selected image
+                        img_id = img_file.stem
+                        if img_id in image_ids:
+                            if not icons_folder_added:
+                                icons_folder_added = True
+                            zip_file.write(img_file, f"icons/{img_file.name}")
+        
+        zip_buffer.seek(0)
+        
+        return send_file(
+            io.BytesIO(zip_buffer.read()),
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=f'selected-images-{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
+        )
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to create download: {str(e)}'}), 500
+
+@app.route('/api/images/remove-background', methods=['POST'])
+def remove_background_selected():
+    """Remove background from selected images"""
+    try:
+        data = request.get_json()
+        image_ids = data.get('imageIds', [])
+        
+        if not image_ids:
+            return jsonify({'error': 'No images selected'}), 400
+        
+        # Get selected image files
+        selected_files = []
+        if RAW_DIR.exists():
+            for img_file in RAW_DIR.iterdir():
+                if img_file.is_file() and img_file.suffix.lower() in ['.png', '.jpg', '.jpeg']:
+                    if img_file.stem in image_ids:
+                        selected_files.append(img_file)
+        
+        if not selected_files:
+            return jsonify({'error': 'No valid images found for processing'}), 400
+        
+        # Initialize background remover
+        pipeline = GenerationPipeline()
+        pipeline.initialize()
+        
+        if not pipeline.background_remover:
+            return jsonify({'error': 'Background remover not available'}), 500
+        
+        # Process images
+        processed_files = pipeline.background_remover.process_batch(selected_files, PROCESSED_DIR)
+        
+        return jsonify({
+            'success': True,
+            'processed': len(processed_files),
+            'message': f'Background removed from {len(processed_files)} images'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to remove background: {str(e)}'}), 500
+
+@app.route('/api/images/convert-ico', methods=['POST'])
+def convert_to_ico_selected():
+    """Convert selected images to ICO format"""
+    try:
+        data = request.get_json()
+        image_ids = data.get('imageIds', [])
+        
+        if not image_ids:
+            return jsonify({'error': 'No images selected'}), 400
+        
+        # Get selected image files (prefer processed versions if available)
+        selected_files = []
+        
+        # Check processed directory first
+        if PROCESSED_DIR.exists():
+            for img_file in PROCESSED_DIR.iterdir():
+                if img_file.is_file() and img_file.suffix.lower() in ['.png', '.jpg', '.jpeg']:
+                    if img_file.stem in image_ids:
+                        selected_files.append(img_file)
+        
+        # Fill in from raw directory for any missing images
+        selected_ids_found = {f.stem for f in selected_files}
+        if RAW_DIR.exists():
+            for img_file in RAW_DIR.iterdir():
+                if img_file.is_file() and img_file.suffix.lower() in ['.png', '.jpg', '.jpeg']:
+                    if img_file.stem in image_ids and img_file.stem not in selected_ids_found:
+                        selected_files.append(img_file)
+        
+        if not selected_files:
+            return jsonify({'error': 'No valid images found for conversion'}), 400
+        
+        # Initialize ICO converter
+        pipeline = GenerationPipeline()
+        pipeline.initialize()
+        
+        if not pipeline.ico_converter:
+            return jsonify({'error': 'ICO converter not available'}), 500
+        
+        # Convert images
+        ico_files = pipeline.ico_converter.convert_batch(selected_files, ICONS_DIR)
+        
+        return jsonify({
+            'success': True,
+            'converted': len(ico_files),
+            'message': f'{len(ico_files)} images converted to ICO format'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to convert to ICO: {str(e)}'}), 500
 
 if __name__ == '__main__':
     # Ensure directories exist

@@ -115,12 +115,16 @@ class GenerationPipeline:
         total_tasks = len(prompt_data) * len(model_specs)
         write_progress(total_tasks=total_tasks, completed=0, status="running")
         generation_tasks = []
-        for prompt in prompt_data:
-            for provider, model in model_specs:
+        for prompt_idx, prompt in enumerate(prompt_data):
+            for model_idx, (provider, model) in enumerate(model_specs):
                 generation_tasks.append({
                     "prompt": prompt,
                     "provider": provider,
-                    "model": model
+                    "model": model,
+                    "prompt_idx": prompt_idx,
+                    "model_idx": model_idx,
+                    "prompt_total": len(prompt_data),
+                    "model_total": len(model_specs)
                 })
         
         # Execute generations with fail-fast logic
@@ -177,8 +181,8 @@ class GenerationPipeline:
             first_task = model_tasks[0]
             first_result = self._generate_single_image(first_task)
             results.append(first_result)
-            # Update progress file after each task completion
-            write_progress(total_tasks=len(tasks), completed=len(results), status="running")
+            # Update progress file after each task completion with detailed info
+            self._update_detailed_progress(first_task, len(tasks), len(results), first_result)
             
             # If first task failed with certain errors, skip remaining tasks for this model
             if not first_result.success and self._should_skip_model(first_result.error):
@@ -206,8 +210,8 @@ class GenerationPipeline:
                         try:
                             result = future.result()
                             results.append(result)
-                            # Update progress file for each finished future
-                            write_progress(total_tasks=len(tasks), completed=len(results), status="running")
+                            # Update progress file for each finished future with detailed info
+                            self._update_detailed_progress(task, len(tasks), len(results), result)
                             
                             # Check if this result should cause us to skip future tasks
                             if not result.success and self._should_skip_model(result.error):
@@ -384,3 +388,36 @@ class GenerationPipeline:
         
         self.logger.info("Complete pipeline finished")
         return complete_results
+    
+    def _update_detailed_progress(self, task, total_tasks, completed, result):
+        """Update progress with detailed prompt/model information"""
+        prompt_id = task["prompt"]["id"]
+        model = task["model"]
+        provider = task["provider"]
+        
+        # Calculate current progress
+        prompt_progress = {
+            "current": task["prompt_idx"] + 1,
+            "total": task["prompt_total"]
+        }
+        model_progress = {
+            "current": task["model_idx"] + 1,
+            "total": task["model_total"]
+        }
+        
+        # Get latest image filename if successful
+        latest_image = None
+        if result.success and result.file_path:
+            latest_image = Path(result.file_path).name
+        
+        write_progress(
+            total_tasks=total_tasks,
+            completed=completed,
+            status="running",
+            current_prompt=prompt_id,
+            prompt_progress=prompt_progress,
+            current_model=model,
+            model_progress=model_progress,
+            endpoint=provider,
+            latest_image=latest_image
+        )

@@ -7,6 +7,11 @@ export default function SelectionPanel() {
   const panelRef = useRef();
   const [panelWidth, setPanelWidth] = useState('medium');
   const [maxImages, setMaxImages] = useState(6);
+  const [processingState, setProcessingState] = useState({
+    downloading: false,
+    removingBg: false,
+    convertingIco: false
+  });
   
   // Convert Set to Array for filtering and enforce max limit
   const selectedIds = Array.from(selectedImages);
@@ -37,6 +42,100 @@ export default function SelectionPanel() {
 
   const clearAll = () => {
     setSelectedImages(new Set());
+  };
+
+  const handleDownloadSelected = async () => {
+    if (selectedImages.size === 0) return;
+
+    setProcessingState(prev => ({ ...prev, downloading: true }));
+    try {
+      const imageIds = Array.from(selectedImages);
+      const response = await fetch('http://localhost:5000/api/images/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ imageIds })
+      });
+
+      if (response.ok) {
+        // Get the blob and create download link
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `selected-images-${new Date().toISOString().slice(0, 10)}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        throw new Error('Failed to download images');
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download images: ' + error.message);
+    } finally {
+      setProcessingState(prev => ({ ...prev, downloading: false }));
+    }
+  };
+
+  const handleRemoveBackground = async () => {
+    if (selectedImages.size === 0) return;
+
+    setProcessingState(prev => ({ ...prev, removingBg: true }));
+    try {
+      const imageIds = Array.from(selectedImages);
+      const response = await fetch('http://localhost:5000/api/images/remove-background', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ imageIds })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`Background removed from ${result.processed} images successfully!`);
+        // Refresh images to show processed versions
+        useImages.refresh();
+      } else {
+        throw new Error('Failed to remove background');
+      }
+    } catch (error) {
+      console.error('Background removal failed:', error);
+      alert('Failed to remove background: ' + error.message);
+    } finally {
+      setProcessingState(prev => ({ ...prev, removingBg: false }));
+    }
+  };
+
+  const handleConvertToICO = async () => {
+    if (selectedImages.size === 0) return;
+
+    setProcessingState(prev => ({ ...prev, convertingIco: true }));
+    try {
+      const imageIds = Array.from(selectedImages);
+      const response = await fetch('http://localhost:5000/api/images/convert-ico', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ imageIds })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`${result.converted} images converted to ICO successfully!`);
+      } else {
+        throw new Error('Failed to convert to ICO');
+      }
+    } catch (error) {
+      console.error('ICO conversion failed:', error);
+      alert('Failed to convert to ICO: ' + error.message);
+    } finally {
+      setProcessingState(prev => ({ ...prev, convertingIco: false }));
+    }
   };
 
   // Monitor panel width changes and calculate max images
@@ -99,11 +198,23 @@ export default function SelectionPanel() {
           )}
         </div>
         <div className="selection-actions">
-          <ActionButton onClick={() => alert('Remove background from ' + selectedImages.size + ' images')} disabled={!selectedImages.size}>
-            🎭 Remove BG
+          <ActionButton 
+            onClick={handleDownloadSelected} 
+            disabled={!selectedImages.size || processingState.downloading}
+          >
+            {processingState.downloading ? '⏳ Downloading...' : '📥 Download'}
           </ActionButton>
-          <ActionButton onClick={() => alert('Convert ' + selectedImages.size + ' images to ICO')} disabled={!selectedImages.size}>
-            🔄 To ICO
+          <ActionButton 
+            onClick={handleRemoveBackground} 
+            disabled={!selectedImages.size || processingState.removingBg}
+          >
+            {processingState.removingBg ? '⏳ Processing...' : '🎭 Remove BG'}
+          </ActionButton>
+          <ActionButton 
+            onClick={handleConvertToICO} 
+            disabled={!selectedImages.size || processingState.convertingIco}
+          >
+            {processingState.convertingIco ? '⏳ Converting...' : '🔄 To ICO'}
           </ActionButton>
         </div>
       </div>

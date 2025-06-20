@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppState } from '../../hooks/useAppState';
+import useImages from '../../hooks/useImages';
 import ResizeHandle from './ResizeHandle';
 
 export default function Gallery() {
   const { allImages, selectedImages, setSelectedImages } = useAppState();
+  const [isGenerating, setIsGenerating] = useState(false);
   const [filter, setFilter] = React.useState('all');
   const [hoveredImage, setHoveredImage] = React.useState(null);
   const [deletedImages, setDeletedImages] = React.useState(new Set());
@@ -48,11 +50,57 @@ export default function Gallery() {
     }
   };
 
+  // Monitor generation status and refresh images when new ones are generated
+  useEffect(() => {
+    let pollInterval;
+
+    const checkGenerationStatus = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/progress');
+        if (response.ok) {
+          const progress = await response.json();
+          const wasGenerating = isGenerating;
+          const nowGenerating = progress.status === 'running';
+          
+          setIsGenerating(nowGenerating);
+          
+          // If generation is running, refresh images more frequently
+          if (nowGenerating) {
+            useImages.refresh();
+          }
+          
+          // If generation just finished, do a final refresh
+          if (wasGenerating && !nowGenerating) {
+            useImages.refresh();
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check generation status:', error);
+      }
+    };
+
+    // Initial check
+    checkGenerationStatus();
+
+    // Set up polling - more frequent when generating
+    const pollFrequency = isGenerating ? 2000 : 5000; // 2s when generating, 5s when idle
+    pollInterval = setInterval(checkGenerationStatus, pollFrequency);
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [isGenerating]);
+
   return (
     <main className="gallery">
       <div className="gallery-header">
         <h2 className="gallery-title">
           Generated Gallery ({filtered.length})
+          {isGenerating && (
+            <span className="generating-indicator">
+              🔄 Generating...
+            </span>
+          )}
         </h2>
         <div className="gallery-filters">
           {['all', 'success', 'openai', 'replicate', 'together_ai', 'fal_ai']

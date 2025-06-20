@@ -159,6 +159,102 @@ body {
     gap: 1px;
 }
 
+/* Workflow Section */
+.workflow-section {
+    background: var(--bg-tertiary);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Real-time Progress */
+.real-time-progress {
+    background: var(--bg-tertiary);
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.current-task {
+    margin: 12px 0;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-blue);
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+}
+
+.task-item:last-child {
+    margin-bottom: 0;
+}
+
+.task-label {
+    min-width: 70px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.task-value {
+    color: var(--text-primary);
+    margin-right: 8px;
+    flex: 1;
+}
+
+.task-counter {
+    color: var(--accent-blue);
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.progress-container {
+    margin-top: 16px;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.progress-stats {
+    text-align: center;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.latest-image {
+    margin-top: 12px;
+    padding: 8px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.latest-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.latest-filename {
+    font-size: 11px;
+    color: var(--accent-blue);
+    word-break: break-all;
+}
+
 .model-status {
     background: var(--bg-tertiary);
     padding: 20px;
@@ -300,6 +396,16 @@ body {
 .gallery-title {
     font-size: 18px;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.generating-indicator {
+    font-size: 14px;
+    color: var(--accent-blue);
+    font-weight: 500;
+    animation: pulse 2s infinite;
 }
 
 .gallery-filters {
@@ -483,24 +589,27 @@ body {
 
 .selection-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 16px;
+    flex-wrap: wrap;
 }
 
 .action-btn {
     flex: 1;
-    padding: 8px 12px;
+    min-width: 80px;
+    padding: 6px 8px;
     border-radius: 6px;
     border: 1px solid var(--border);
     background: var(--bg-secondary);
     color: var(--text-primary);
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
+    white-space: nowrap;
 }
 
 .action-btn:hover {
@@ -744,6 +853,211 @@ body {
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* Workflow Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-secondary);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.config-section {
+    margin-bottom: 24px;
+}
+
+.config-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.config-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.config-radio-group {
+    margin-bottom: 12px;
+}
+
+.config-radio {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.config-radio input {
+    margin-right: 8px;
+}
+
+.config-checkboxes {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    background: var(--bg-tertiary);
+}
+
+.config-checkbox {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.config-checkbox:last-child {
+    margin-bottom: 0;
+}
+
+.config-checkbox input {
+    margin-right: 8px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    background: var(--bg-secondary);
+}
+
+.modal-button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.modal-button.secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.modal-button.secondary:hover:not(:disabled) {
+    background: var(--bg-primary);
+}
+
+.modal-button.primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.modal-button.primary:hover:not(:disabled) {
+    background: #0084FF;
+    transform: translateY(-1px);
+}
+
+.modal-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.workflow-trigger-button {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.workflow-trigger-button:hover {
+    background: #0084FF;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+}
+
+.workflow-trigger-button:active {
+    transform: translateY(0);
 }
 
 /* Scrollbar */

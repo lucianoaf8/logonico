@@ -38,13 +38,29 @@ def _atomic_write(path: Path, data: dict) -> None:
     tmp.replace(path)
 
 
-def write_progress(total_tasks: int, completed: int, status: Literal["running", "complete"]) -> None:
-    """Create/overwrite the progress JSON file.
+def write_progress(
+    total_tasks: int, 
+    completed: int, 
+    status: Literal["running", "complete"],
+    current_prompt: str = None,
+    prompt_progress: dict = None,
+    current_model: str = None,
+    model_progress: dict = None,
+    endpoint: str = None,
+    latest_image: str = None
+) -> None:
+    """Create/overwrite the progress JSON file with detailed tracking.
 
     Args:
         total_tasks: The total number of images/tasks that will be processed.
         completed:   How many tasks have completed so far (successful _or_ failed).
         status:      "running" while the pipeline is executing, "complete" when finished.
+        current_prompt: The prompt ID currently being processed.
+        prompt_progress: Dict with "current" and "total" for prompt counter.
+        current_model: The model currently being used.
+        model_progress: Dict with "current" and "total" for model counter.
+        endpoint: The API endpoint/provider being used.
+        latest_image: Filename of the most recently generated image.
     """
     if total_tasks <= 0:
         # Avoid division by zero; treat as 100 % complete.
@@ -59,6 +75,21 @@ def write_progress(total_tasks: int, completed: int, status: Literal["running", 
         "completed": completed,
         "success_rate": success_rate,
     }
+    
+    # Add detailed progress info if provided
+    if current_prompt:
+        data["current_prompt"] = current_prompt
+    if prompt_progress:
+        data["prompt_progress"] = prompt_progress
+    if current_model:
+        data["current_model"] = current_model
+    if model_progress:
+        data["model_progress"] = model_progress
+    if endpoint:
+        data["endpoint"] = endpoint
+    if latest_image:
+        data["latest_image"] = latest_image
+    
     # Ensure parent dir exists (it should, but be safe).
     PROGRESS_FILE.parent.mkdir(parents=True, exist_ok=True)
     _atomic_write(PROGRESS_FILE, data)
