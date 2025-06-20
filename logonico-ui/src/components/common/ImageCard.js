@@ -8,7 +8,7 @@ export default function ImageCard({ img, selected, onClick }) {
       title={`${img.prompt_id} - ${img.provider}:${img.model}`}
     >
       <img 
-        src={img.url} 
+        src={`http://localhost:5000/api/image/${img.filename}`} 
         alt={img.prompt_id}
         className="image-display"
         loading="lazy"

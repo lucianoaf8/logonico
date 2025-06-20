@@ -5,8 +5,10 @@ import json
 import re
 from datetime import datetime
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent

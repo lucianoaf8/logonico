@@ -1,4 +1,4 @@
-const base = '/api';
+const base = 'http://localhost:5000/api';
 
 const apiService = {
   getImages:    ()=>fetch(`${base}/images`).then(r=>r.json()),
