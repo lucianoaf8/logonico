@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAppState } from '../../hooks/useAppState';
 import ActionButton from '../common/ActionButton';
 
 export default function SelectionPanel() {
   const { allImages, selectedImages, setSelectedImages } = useAppState();
+  const panelRef = useRef();
+  const [panelWidth, setPanelWidth] = useState('medium');
+  const [maxImages, setMaxImages] = useState(6);
   
-  // Convert Set to Array for filtering
+  // Convert Set to Array for filtering and enforce max limit
   const selectedIds = Array.from(selectedImages);
   const selectedData = allImages.filter(img => selectedImages.has(img.id));
+  
+  // Enforce max images limit - remove oldest if exceeding
+  useEffect(() => {
+    if (selectedImages.size > maxImages) {
+      const selectedArray = Array.from(selectedImages);
+      const excess = selectedImages.size - maxImages;
+      const newSelection = new Set(selectedArray.slice(excess));
+      setSelectedImages(newSelection);
+    }
+  }, [selectedImages.size, maxImages, selectedImages, setSelectedImages]);
 
   console.log('Selection Debug:', {
     selectedImages: selectedImages,
@@ -26,8 +39,56 @@ export default function SelectionPanel() {
     setSelectedImages(new Set());
   };
 
+  // Monitor panel width changes and calculate max images
+  useEffect(() => {
+    const updatePanelSize = () => {
+      if (panelRef.current) {
+        const width = panelRef.current.offsetWidth;
+        const height = panelRef.current.offsetHeight;
+        
+        // Calculate available space for images (minus padding and header)
+        const availableWidth = width - 40; // 20px padding on each side
+        const availableHeight = height - 140; // header (~100px) + padding
+        
+        let imageSize, columns, rows, maxImagesCount;
+        
+        if (width < 300) {
+          setPanelWidth('small');
+          imageSize = availableWidth; // Single column
+          columns = 1;
+        } else if (width < 400) {
+          setPanelWidth('medium');
+          imageSize = 150;
+          columns = Math.floor((availableWidth + 12) / (imageSize + 12));
+        } else if (width < 500) {
+          setPanelWidth('large');
+          imageSize = 180;
+          columns = Math.floor((availableWidth + 12) / (imageSize + 12));
+        } else {
+          setPanelWidth('xlarge');
+          imageSize = 200;
+          columns = Math.floor((availableWidth + 12) / (imageSize + 12));
+        }
+        
+        rows = Math.floor((availableHeight + 12) / (imageSize + 12));
+        maxImagesCount = Math.max(1, columns * rows);
+        
+        setMaxImages(maxImagesCount);
+      }
+    };
+
+    updatePanelSize();
+    
+    const resizeObserver = new ResizeObserver(updatePanelSize);
+    if (panelRef.current) {
+      resizeObserver.observe(panelRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
   return (
-    <aside className="selection-panel">
+    <aside ref={panelRef} className="selection-panel" data-width={panelWidth}>
       <div className="selection-header">
         <div className="selection-title">
           <span>Selected Images ({selectedImages.size})</span>
@@ -73,20 +134,6 @@ export default function SelectionPanel() {
         )}
       </div>
 
-      {selectedData.length > 0 && (
-        <div className="selection-info">
-          <div className="info-line"><strong>Selection Info:</strong></div>
-          <div className="info-line">Count: {selectedData.length} images</div>
-          <div className="info-line">Total Size: {selectedData.reduce((sum, img) => sum + (img.size_mb || 0), 0).toFixed(1)} MB</div>
-          {selectedData.length === 1 && (
-            <>
-              <div className="info-line">Name: {selectedData[0].prompt_id}</div>
-              <div className="info-line">Provider: {selectedData[0].provider}</div>
-              <div className="info-line">Model: {selectedData[0].model}</div>
-            </>
-          )}
-        </div>
-      )}
     </aside>
   );
 }

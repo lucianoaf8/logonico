@@ -1,37 +1,52 @@
 [
   {
-    "id": "quantum_wave",
-    "title": "Quantum Waveform Bubble",
-    "prompt": "Ultra-modern Chrome extension icon: a smooth speech bubble outline composed of pulsating quantum waveforms. Incorporate subtle neon-purple and electric-blue gradients with faint particle trails. Abstract, futuristic, vector style, high contrast, no text."
+    "id": "ai_palette_brush",
+    "title": "AI Palette Brush",
+    "prompt": "Minimalist icon: a sleek paintbrush whose bristles morph into fine circuit traces, centered on a simple circular AI core. Subtle electric-blue and neon-green gradient, crisp vector lines, high contrast, no text."
   },
   {
-    "id": "neon_vortex",
-    "title": "Neon Vortex Note",
-    "prompt": "Abstract icon showing a swirling vortex inside a square note outline, symbolizing prompt storage. Use neon-pink, cyan, and midnight-black palette, with dynamic radial lines suggesting energy flow. Crisp vector edges, minimalist, no text."
+    "id": "pixel_forge_anvil",
+    "title": "Pixel Forge Anvil",
+    "prompt": "Abstract icon: a clean anvil forging three pixel cubes, with small sparks flying off. Monochrome dark slate with bright magenta accents, vector style, balanced composition, no text."
   },
   {
-    "id": "holo_brain",
-    "title": "Holographic Brain Note",
-    "prompt": "Futuristic icon of a floating translucent note page with a glowing holographic neural network (brain) projection above it. Palette: holo-green, electric-blue, dark slate. Sharp tech lines, minimal shadows, vector style, no letters."
+    "id": "neon_processor_chip",
+    "title": "Neon Processor Chip",
+    "prompt": "Futuristic icon: a microchip overlaid by a dynamic brush stroke, glowing in neon-cyan and lime-green. Sharp vector edges, tech aesthetic, minimalist, no text."
   },
   {
-    "id": "ethereal_lens",
-    "title": "Ethereal Lens + Prompt",
-    "prompt": "Transcendent icon depicting a stylized eye-shaped lens overlaying a prompt card. Light pastel gradients of lavender and sky-blue with a soft glow effect. Abstract, minimal strokes, vector format, suggests insight and clarity, no text."
+    "id": "geometric_processing_hub",
+    "title": "Geometric Processing Hub",
+    "prompt": "Modern icon: three interlocking hexagons forming a hub, each containing a tiny icon silhouette. Soft pastel teal and charcoal palette, crisp vector style, no text."
   },
   {
-    "id": "flux_cube",
-    "title": "Fluxing Data Cube",
-    "prompt": "Modern icon showing a 3D cube made of translucent layers, one face replaced by a prompt sheet icon. Layers animated with tiny circuit patterns in neon-teal and deep indigo. Crisp vector, abstract sci-fi aesthetic, no letters."
+    "id": "galaxy_canvas_frame",
+    "title": "Galaxy Canvas Frame",
+    "prompt": "Futuristic icon: a square canvas frame with a starfield inside and a curved paint stroke orbiting it. Deep navy and violet with neon-pink accents, vector lines, no text."
   },
   {
-    "id": "circuit_orb",
-    "title": "Circuit Orb Memo",
-    "prompt": "Futuristic circular icon: a glowing orb of intersecting circuit traces hovering above a minimalist memo sheet. Use gradients of silver and electric-blue with subtle glow. Clean vector lines, modern tech feel, no text."
+    "id": "circuit_stylus",
+    "title": "Circuit Stylus",
+    "prompt": "Minimalist icon: a stylus pen whose tip is a tiny processor, trailing pixel dust that fades into circuit lines. Monochrome with electric-blue highlights, vector style, no text."
   },
   {
-    "id": "infinite_loop",
-    "title": "Infinite Loop Prompt",
-    "prompt": "Abstract icon featuring two intertwined loops forming an infinity symbol, with one loop stylized as a document and the other as a chat bubble. Palette: neon orange and charcoal. Sleek vector design, high contrast, no text."
+    "id": "prism_logo_form",
+    "title": "Prism Logo Form",
+    "prompt": "Abstract icon: a triangular prism refracting simple icon shapes in a rainbow gradient. Flat vector design, high contrast against dark background, no text."
+  },
+  {
+    "id": "holographic_frame",
+    "title": "Holographic Frame",
+    "prompt": "Futuristic icon: a floating rectangular frame with layered translucent icon shapes inside and subtle glow. Soft cyan and white, minimalist vector, no text."
+  },
+  {
+    "id": "robotic_hand_icon",
+    "title": "Robotic Hand Icon",
+    "prompt": "Modern icon: a stylized robotic hand gently holding a generic icon shape (circle with inner dot). Metallic silver and neon-orange accents, crisp vector lines, no text."
+  },
+  {
+    "id": "lens_network_overlay",
+    "title": "Lens Network Overlay",
+    "prompt": "Abstract icon: a camera lens front overlayed by a network of interconnected nodes. Deep black and neon-green palette, vector style, precise geometry, no text."
   }
 ]

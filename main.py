@@ -24,8 +24,9 @@ from src.core.config import Config
 from src.utils.logging_utils import setup_logger
 
 def setup_cli_logger():
-    """Setup logger for CLI output"""
-    return setup_logger("main", level="INFO")
+    """Setup logger for CLI output (also writes to generation.log for UI streaming)"""
+    from src.core.config import Config
+    return setup_logger("main", Config.LOGS_DIR / "generation.log", level="INFO")
 
 def cmd_status(args):
     """Show system status"""

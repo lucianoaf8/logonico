@@ -14,6 +14,7 @@ from collections import defaultdict
 from .config import Config
 from .models import model_registry
 from ..utils.file_utils import load_prompts
+from ..utils.progress_utils import write_progress, reset_progress
 from ..utils.logging_utils import setup_logger
 from ..processors.background_remover import BackgroundRemover
 from ..processors.ico_converter import ICOConverter
@@ -75,6 +76,7 @@ class GenerationPipeline:
         start_time = time.time()
         
         # Reset failed models tracking
+        reset_progress()
         self.failed_models.clear()
         
         # Load prompts
@@ -109,6 +111,9 @@ class GenerationPipeline:
         self.logger.info(f"Starting generation: {len(prompt_data)} prompts × {len(model_specs)} models = {len(prompt_data) * len(model_specs)} images")
         
         # Generate all combinations
+        # Initialise progress tracking now that we know total tasks
+        total_tasks = len(prompt_data) * len(model_specs)
+        write_progress(total_tasks=total_tasks, completed=0, status="running")
         generation_tasks = []
         for prompt in prompt_data:
             for provider, model in model_specs:
@@ -140,6 +145,9 @@ class GenerationPipeline:
             "results": results
         }
         
+        # Mark progress complete
+        write_progress(total_tasks=len(generation_tasks), completed=len(results), status="complete")
+
         self.logger.info(f"Generation complete: {successful}/{len(results)} successful, {skipped} skipped, in {total_time:.1f}s")
         if self.failed_models:
             self.logger.info(f"Failed models (skipped subsequent prompts): {', '.join(self.failed_models)}")
@@ -169,6 +177,8 @@ class GenerationPipeline:
             first_task = model_tasks[0]
             first_result = self._generate_single_image(first_task)
             results.append(first_result)
+            # Update progress file after each task completion
+            write_progress(total_tasks=len(tasks), completed=len(results), status="running")
             
             # If first task failed with certain errors, skip remaining tasks for this model
             if not first_result.success and self._should_skip_model(first_result.error):
@@ -196,6 +206,8 @@ class GenerationPipeline:
                         try:
                             result = future.result()
                             results.append(result)
+                            # Update progress file for each finished future
+                            write_progress(total_tasks=len(tasks), completed=len(results), status="running")
                             
                             # Check if this result should cause us to skip future tasks
                             if not result.success and self._should_skip_model(result.error):

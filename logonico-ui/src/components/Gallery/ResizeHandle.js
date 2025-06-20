@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ResizeHandle() {
   const handle = useRef();
+  const [handlePosition, setHandlePosition] = useState(null);
   
   useEffect(() => {
     const h = handle.current;
@@ -13,6 +14,16 @@ export default function ResizeHandle() {
     
     const container = document.querySelector('.container');
     if (!container) return;
+    
+    // Calculate initial handle position
+    const updateHandlePosition = () => {
+      const cols = getComputedStyle(container).gridTemplateColumns.split(' ');
+      const sidebarWidth = parseFloat(cols[0]) || 280;
+      const galleryWidth = parseFloat(cols[1]) || 400;
+      setHandlePosition(sidebarWidth + galleryWidth);
+    };
+    
+    updateHandlePosition();
     
     const onMouseDown = (e) => { 
       isResizing = true; 
@@ -33,6 +44,9 @@ export default function ResizeHandle() {
       if (newGallery < 300 || newSel < 250) return;
       
       container.style.gridTemplateColumns = `${a}px ${newGallery}px ${newSel}px`;
+      
+      // Update handle position to follow the gallery edge
+      setHandlePosition(a + newGallery);
     };
     
     const onMouseUp = () => { 
@@ -53,14 +67,14 @@ export default function ResizeHandle() {
   }, []);
   
   return <div ref={handle} className="resize-handle" style={{
-    position: 'absolute',
+    position: 'fixed',
     top: '60px',
     bottom: '80px',
     width: '4px',
     background: 'var(--border)',
     cursor: 'col-resize',
     zIndex: 1000,
-    right: '400px',
+    left: handlePosition ? `${handlePosition}px` : '680px',
     transition: 'background-color 0.2s ease'
   }} />;
 }

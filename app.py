@@ -1,11 +1,13 @@
 # app.py - LogoNico Flask Web Interface
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify, send_file, Response, stream_with_context
 from pathlib import Path
 import json
 import re
 from datetime import datetime
 import os
 from flask_cors import CORS
+from src.utils.progress_utils import read_progress
+import time, os
 
 app = Flask(__name__)
 CORS(app)
@@ -168,6 +170,32 @@ def api_stats():
         'status': 'complete'  # Since we're viewing completed generation
     })
 
+@app.route('/api/progress')
+def api_progress():
+    """Return current generation progress"""
+    return jsonify(read_progress())
+
+
+@app.route('/api/logs/stream')
+def api_logs_stream():
+    """Server-Sent Events stream of live log lines"""
+    def generate():
+        log_file = LOGS_DIR / "generation.log"
+        log_file.parent.mkdir(exist_ok=True)
+        # open file, seek to end so we only stream new lines
+        with open(log_file, 'r', encoding='utf-8') as f:
+            f.seek(0, os.SEEK_END)
+            while True:
+                line = f.readline()
+                if line:
+                    yield f"data: {line.strip()}\n\n"
+                else:
+                    # heartbeat every 15s
+                    yield "data: \n\n"
+                    time.sleep(1)
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+
+
 @app.route('/api/logs')
 def api_logs():
     """Get recent logs"""
@@ -212,6 +240,45 @@ def api_logs():
             })
     
     return jsonify(logs)
+
+@app.route('/api/image/<filename>/delete', methods=['POST'])
+def delete_image(filename):
+    """Move image to trash folder instead of deleting"""
+    import shutil
+    
+    # Create trash directory if it doesn't exist
+    trash_dir = OUTPUT_DIR / "trash"
+    trash_dir.mkdir(exist_ok=True)
+    
+    source_path = RAW_DIR / filename
+    if not source_path.exists():
+        return jsonify({'error': 'Image not found'}), 404
+    
+    try:
+        # Move to trash with timestamp to avoid conflicts
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        trash_filename = f"{source_path.stem}_{timestamp}{source_path.suffix}"
+        trash_path = trash_dir / trash_filename
+        
+        shutil.move(str(source_path), str(trash_path))
+        
+        # Also move processed versions if they exist
+        processed_path = PROCESSED_DIR / filename
+        if processed_path.exists():
+            processed_trash_path = trash_dir / f"processed_{trash_filename}"
+            shutil.move(str(processed_path), str(processed_trash_path))
+        
+        # Also move icon versions if they exist
+        ico_filename = filename.rsplit('.', 1)[0] + '.ico'
+        ico_path = ICONS_DIR / ico_filename
+        if ico_path.exists():
+            ico_trash_path = trash_dir / f"icon_{ico_filename.rsplit('.', 1)[0]}_{timestamp}.ico"
+            shutil.move(str(ico_path), str(ico_trash_path))
+        
+        return jsonify({'success': True, 'message': f'Image moved to trash as {trash_filename}'})
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to delete image: {str(e)}'}), 500
 
 if __name__ == '__main__':
     # Ensure directories exist

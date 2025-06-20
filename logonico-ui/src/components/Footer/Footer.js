@@ -3,13 +3,16 @@ import { useAppState } from '../../hooks/useAppState';
 import useImages from '../../hooks/useImages';
 import useStats from '../../hooks/useStats';
 import useLogs from '../../hooks/useLogs';
+import useProgress from '../../hooks/useProgress';
 
 export default function Footer() {
   const { stats, selectedImages } = useAppState();
+  const progress = useProgress();
   const totalGenerated = stats.total_images || 0;
   const providersUsed  = Object.keys(stats.providers||{}).length;
   const totalSize      = stats.totalSize || 0;
   const successRate    = stats.success_rate || 100;
+  const progressPercent = progress.total_tasks ? (progress.completed / progress.total_tasks * 100) : successRate;
 
   const handleRefresh = () => {
     useImages.refresh();
@@ -35,7 +38,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="main-progress">
         <div className="main-progress-text">
-          <span><strong>Generation:</strong> Complete</span>
+          <span><strong>Generation:</strong> {progress.status === 'running' ? `${progress.completed}/${progress.total_tasks}` : 'Complete'}</span>
           <div className="progress-stats">
             <span>📸 {totalGenerated} images</span>
             <span>🎯 {providersUsed} providers</span>
@@ -45,7 +48,7 @@ export default function Footer() {
         <div className="main-progress-bar">
           <div
             className="main-progress-fill"
-            style={{ width: `${successRate}%` }}
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
       </div>

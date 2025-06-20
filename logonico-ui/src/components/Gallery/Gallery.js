@@ -1,12 +1,15 @@
 import React from 'react';
 import { useAppState } from '../../hooks/useAppState';
+import ResizeHandle from './ResizeHandle';
 
 export default function Gallery() {
   const { allImages, selectedImages, setSelectedImages } = useAppState();
   const [filter, setFilter] = React.useState('all');
   const [hoveredImage, setHoveredImage] = React.useState(null);
+  const [deletedImages, setDeletedImages] = React.useState(new Set());
 
   const filtered = allImages.filter(img => {
+    if (deletedImages.has(img.id)) return false;
     if (filter === 'all') return true;
     return img.status === filter || img.provider === filter;
   });
@@ -23,6 +26,26 @@ export default function Gallery() {
 
   const handleImageLeave = () => {
     setHoveredImage(null);
+  };
+
+  const handleDeleteImage = async (e, img) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(`http://localhost:5000/api/image/${img.filename}/delete`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        setDeletedImages(prev => new Set([...prev, img.id]));
+        // Also remove from selected images if it was selected
+        if (selectedImages.has(img.id)) {
+          const newSelected = new Set(selectedImages);
+          newSelected.delete(img.id);
+          setSelectedImages(newSelected);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete image:', error);
+    }
   };
 
   return (
@@ -63,6 +86,13 @@ export default function Gallery() {
             {selectedImages.has(img.id) && (
               <div className="selection-indicator">✓</div>
             )}
+            <button 
+              className="delete-button"
+              onClick={(e) => handleDeleteImage(e, img)}
+              title="Delete image"
+            >
+              🗑️
+            </button>
           </div>
         )) : (
           <div className="loading">No images found</div>
@@ -91,6 +121,8 @@ export default function Gallery() {
           </div>
         </div>
       )}
+      
+      <ResizeHandle />
     </main>
   );
 }
