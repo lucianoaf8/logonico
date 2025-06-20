@@ -2,9 +2,72 @@
 
 ``````
 [ROOT] logonico
-|-- [DIR] (empty) cache
+|-- [DIR] cache
+|   |-- [JSON]replicate_versions.json
 |-- [DIR] config
 |   |-- [JSON]prompts.json
+|-- [DIR] logonico-ui
+|   |-- [DIR] public
+|   |   |-- [FILE]favicon.ico
+|   |   |-- [HTML]index.html
+|   |   |-- [FILE]logo192.png
+|   |   |-- [FILE]logo512.png
+|   |   |-- [JSON]manifest.json
+|   |   |-- [TXT] robots.txt
+|   |-- [DIR] src
+|   |   |-- [DIR] components
+|   |   |   |-- [DIR] common
+|   |   |   |   |-- [JS]  ActionButton.js
+|   |   |   |   |-- [JS]  FilterButton.js
+|   |   |   |   |-- [JS]  ImageCard.js
+|   |   |   |   |-- [JS]  LoadingSpinner.js
+|   |   |   |   |-- [JS]  ProgressBar.js
+|   |   |   |   |-- [JS]  StatusBadge.js
+|   |   |   |-- [DIR] Footer
+|   |   |   |   |-- [JS]  Footer.js
+|   |   |   |-- [DIR] Gallery
+|   |   |   |   |-- [JS]  Gallery.js
+|   |   |   |   |-- [JS]  ImageGrid.js
+|   |   |   |   |-- [JS]  LogEntry.js
+|   |   |   |   |-- [JS]  ProviderDots.js
+|   |   |   |   |-- [JS]  ResizeHandle.js
+|   |   |   |   |-- [JS]  SelectionActions.js
+|   |   |   |-- [DIR] Header
+|   |   |   |   |-- [JS]  Header.js
+|   |   |   |-- [DIR] Layout
+|   |   |   |   |-- [JS]  AppLayout.js
+|   |   |   |   |-- [JS]  PanelContainer.js
+|   |   |   |-- [DIR] SelectionPanel
+|   |   |   |   |-- [JS]  SelectionPanel.js
+|   |   |   |-- [DIR] Sidebar
+|   |   |   |   |-- [JS]  Sidebar.js
+|   |   |-- [DIR] hooks
+|   |   |   |-- [JS]  useAppState.js
+|   |   |   |-- [JS]  useImages.js
+|   |   |   |-- [JS]  useLogs.js
+|   |   |   |-- [JS]  useResizePanel.js
+|   |   |   |-- [JS]  useStats.js
+|   |   |   |-- [JS]  useTheme.js
+|   |   |-- [DIR] services
+|   |   |   |-- [JS]  apiService.js
+|   |   |   |-- [JS]  fileUtils.js
+|   |   |   |-- [JS]  imageParser.js
+|   |   |   |-- [JS]  themeService.js
+|   |   |-- [DIR] (empty) styles
+|   |   |-- [DIR] (empty) types
+|   |   |-- [DIR] (empty) utils
+|   |   |-- [CSS] App.css
+|   |   |-- [JS]  App.js
+|   |   |-- [JS]  App.test.js
+|   |   |-- [CSS] index.css
+|   |   |-- [JS]  index.js
+|   |   |-- [FILE]logo.svg
+|   |   |-- [JS]  reportWebVitals.js
+|   |   |-- [JS]  setupTests.js
+|   |-- [FILE].gitignore
+|   |-- [JSON]package.json
+|   |-- [JSON]package-lock.json
+|   |-- [MD]  README.md
 |-- [DIR] src
 |   |-- [DIR] core
 |   |   |-- [PY]  (empty) __init__.py
@@ -30,14 +93,18 @@
 |   |   |-- [PY]  logging_utils.py
 |   |   |-- [PY]  naming.py
 |   |-- [PY]  (empty) __init__.py
+|-- [DIR] templates
+|   |-- [HTML]index.html
 |-- [DIR] (empty) tests
-|-- [FILE].env.example
 |-- [FILE].gitignore
+|-- [PY]  app.py
 |-- [MD]  Logonico - Windows Setup Guide.md
 |-- [PY]  main.py
+|-- [MD]  modularization.md
 |-- [MD]  project_review_assessment.md
 |-- [MD]  project_structure.md
 |-- [MD]  project-review-checlist.md
+|-- [SCRIPT]react-setup.ps1
 |-- [MD]  README.md
 |-- [TXT] requirements.txt
 |-- [PY]  setup.py
@@ -46,5 +113,5 @@
 
 ## Summary
 
-- **Total Items Displayed**: 40
+- **Total Items Displayed**: 107
 - **Project Root**: `C:\Projects\logonico`

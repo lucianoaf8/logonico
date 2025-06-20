@@ -1,27 +1,37 @@
 [
   {
-    "id": "spark_dialog", 
-    "title": "Spark Dialog Bubble + Circuit",
-    "prompt": "Minimalist, futuristic Chrome extension icon. A speech bubble representing conversation, overlaid with a glowing electric spark and subtle circuit or neural network lines inside or around the bubble. Neon blue and indigo gradient, crisp vector style, modern and sophisticated, high contrast. No text or letters. Suitable for small sizes."
+    "id": "quantum_wave",
+    "title": "Quantum Waveform Bubble",
+    "prompt": "Ultra-modern Chrome extension icon: a smooth speech bubble outline composed of pulsating quantum waveforms. Incorporate subtle neon-purple and electric-blue gradients with faint particle trails. Abstract, futuristic, vector style, high contrast, no text."
   },
   {
-    "id": "magic_wand",
-    "title": "Magic Wand + Text Cursor", 
-    "prompt": "Minimalist, modern Chrome extension icon. A sleek magic wand crossing a classic text cursor (I-beam), with small glowing pixel stars or sparkles suggesting enhancement or transformation. Futuristic color scheme with black, white, and neon blue accents. High-contrast, crisp vector style, easily recognizable at small sizes, no text or letters."
+    "id": "neon_vortex",
+    "title": "Neon Vortex Note",
+    "prompt": "Abstract icon showing a swirling vortex inside a square note outline, symbolizing prompt storage. Use neon-pink, cyan, and midnight-black palette, with dynamic radial lines suggesting energy flow. Crisp vector edges, minimalist, no text."
   },
   {
-    "id": "terminal_spark",
-    "title": "Terminal/Prompt Brackets + Spark",
-    "prompt": "Modern, futuristic Chrome extension icon. Features classic prompt brackets (e.g., > or >>>) inside a rounded rectangle or terminal window, with an electric blue spark or glowing lines to suggest AI generation or automation. Indigo and blue gradient, subtle 3D shadow, minimalist vector style, high visibility at small sizes. No text or letters."
+    "id": "holo_brain",
+    "title": "Holographic Brain Note",
+    "prompt": "Futuristic icon of a floating translucent note page with a glowing holographic neural network (brain) projection above it. Palette: holo-green, electric-blue, dark slate. Sharp tech lines, minimal shadows, vector style, no letters."
   },
   {
-    "id": "ai_circuit",
-    "title": "AI Circuit Node + Text",
-    "prompt": "Futuristic, minimalist Chrome extension icon. Abstract neural node or circuit motif, with small stylized text glyphs or a subtle P shape integrated, suggesting prompt and AI intelligence. Silver, blue, and holographic gradients, crisp vector lines, modern and sophisticated, easily recognizable at small sizes. No full words or obvious letters."
+    "id": "ethereal_lens",
+    "title": "Ethereal Lens + Prompt",
+    "prompt": "Transcendent icon depicting a stylized eye-shaped lens overlaying a prompt card. Light pastel gradients of lavender and sky-blue with a soft glow effect. Abstract, minimal strokes, vector format, suggests insight and clarity, no text."
   },
   {
-    "id": "bubble_circuit",
-    "title": "Bubble + Circuit (Combined, Default Suggestion)",
-    "prompt": "Minimalist, futuristic Chrome extension icon, featuring a speech bubble merged with a glowing circuit or neural network motif. Neon blue and indigo gradients, subtle spark or glow, crisp vector lines. Modern, sophisticated, suitable for an AI prompt assistant. High-contrast, easily recognizable at small sizes. No text or letters."
+    "id": "flux_cube",
+    "title": "Fluxing Data Cube",
+    "prompt": "Modern icon showing a 3D cube made of translucent layers, one face replaced by a prompt sheet icon. Layers animated with tiny circuit patterns in neon-teal and deep indigo. Crisp vector, abstract sci-fi aesthetic, no letters."
+  },
+  {
+    "id": "circuit_orb",
+    "title": "Circuit Orb Memo",
+    "prompt": "Futuristic circular icon: a glowing orb of intersecting circuit traces hovering above a minimalist memo sheet. Use gradients of silver and electric-blue with subtle glow. Clean vector lines, modern tech feel, no text."
+  },
+  {
+    "id": "infinite_loop",
+    "title": "Infinite Loop Prompt",
+    "prompt": "Abstract icon featuring two intertwined loops forming an infinity symbol, with one loop stylized as a document and the other as a chat bubble. Palette: neon orange and charcoal. Sleek vector design, high contrast, no text."
   }
 ]

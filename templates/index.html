@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogoNico Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0D1117;
+            --bg-secondary: #161B22;
+            --bg-tertiary: #21262D;
+            --text-primary: #F0F6FC;
+            --text-secondary: #8B949E;
+            --accent-blue: #00D9FF;
+            --success: #00D9FF;
+            --warning: #FFC107;
+            --error: #FF5555;
+            --processing: #FF8C00;
+            --border: #30363D;
+            --glass-bg: rgba(33, 38, 45, 0.8);
+            --glow: 0 0 20px rgba(0, 217, 255, 0.3);
+            --selection: rgba(0, 217, 255, 0.2);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F6F8FA;
+            --bg-tertiary: #FFFFFF;
+            --text-primary: #24292F;
+            --text-secondary: #656D76;
+            --border: #D0D7DE;
+            --glass-bg: rgba(246, 248, 250, 0.8);
+            --glow: 0 0 20px rgba(0, 217, 255, 0.2);
+            --selection: rgba(0, 217, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: grid;
+            grid-template-areas: 
+                "header header header"
+                "sidebar gallery selection"
+                "footer footer footer";
+            grid-template-rows: 60px calc(100vh - 140px) 80px;
+            grid-template-columns: 280px 1fr 400px;
+            height: 100vh;
+            gap: 1px;
+            background: var(--border);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            grid-area: header;
+            background: var(--bg-secondary);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), #0084FF);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .selected-info {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .provider-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+
+        .provider-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .dot.failed {
+            background: var(--error);
+            animation: none;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .model-status {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            flex: 1;
+        }
+
+        .status-section {
+            margin-bottom: 20px;
+        }
+
+        .status-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-badge.complete {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--success);
+        }
+
+        .prompt-preview {
+            background: var(--glass-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .model-progress {
+            margin-top: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), #0084FF);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            box-shadow: var(--glow);
+        }
+
+        .progress-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Logs */
+        .logs {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logs-content {
+            flex: 1;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            padding: 2px 0;
+            animation: slideIn 0.3s ease;
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            min-width: 55px;
+        }
+
+        .log-status {
+            min-width: 16px;
+        }
+
+        .log-message {
+            color: var(--text-primary);
+        }
+
+        /* Gallery */
+        .gallery {
+            grid-area: gallery;
+            background: var(--bg-secondary);
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .gallery-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .gallery-filters {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .filter-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: var(--bg-primary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            flex: 1;
+        }
+
+        .image-card {
+            aspect-ratio: 1;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: scale(1.05);
+            box-shadow: var(--glow);
+            border-color: var(--accent-blue);
+        }
+
+        .image-card.selected {
+            border-color: var(--accent-blue);
+            background: var(--selection);
+            box-shadow: var(--glow);
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--text-secondary);
+        }
+
+        .image-display {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Resize Handle */
+        .resize-handle {
+            position: absolute;
+            top: 60px;
+            bottom: 80px;
+            width: 4px;
+            background: var(--border);
+            cursor: col-resize;
+            z-index: 1000;
+            transition: background-color 0.2s ease;
+        }
+
+        .resize-handle:hover {
+            background: var(--accent-blue);
+        }
+
+        .resize-handle.dragging {
+            background: var(--accent-blue);
+        }
+
+        /* Selection Panel */
+        .selection-panel {
+            grid-area: selection;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .selection-header {
+            padding: 20px 20px 0 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-tertiary);
+        }
+
+        .selection-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .clear-selection {
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .clear-selection:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .selection-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .selected-images {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(120px, calc((100% - 40px) / 2)), 1fr));
+            gap: 12px;
+            align-content: start;
+        }
+
+        /* Dynamic grid sizing based on panel width */
+        .selection-panel[data-width="small"] .selected-images {
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        }
+
+        .selection-panel[data-width="medium"] .selected-images {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
+
+        .selection-panel[data-width="large"] .selected-images {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+
+        .selection-panel[data-width="xlarge"] .selected-images {
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        }
+
+        .selected-image-card {
+            aspect-ratio: 1;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-blue);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .selected-image-card:hover {
+            transform: scale(1.02);
+            box-shadow: var(--glow);
+        }
+
+        .selected-image-display {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .selected-image-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--success);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .remove-selected {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--error);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .selected-image-card:hover .remove-selected {
+            opacity: 1;
+        }
+
+        .selection-info {
+            background: var(--bg-primary);
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .info-line {
+            margin-bottom: 4px;
+        }
+
+        .empty-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Footer */
+        .footer {
+            grid-area: footer;
+            background: var(--bg-secondary);
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .main-progress {
+            margin-bottom: 12px;
+        }
+
+        .main-progress-text {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+
+        .progress-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .main-progress-bar {
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .main-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #0084FF);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            box-shadow: var(--glow);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .control-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .control-btn.primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .control-btn.danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-areas: 
+                    "header header"
+                    "gallery selection"
+                    "footer footer";
+                grid-template-columns: 1fr 350px;
+                grid-template-rows: 60px calc(100vh - 140px) 80px;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .resize-handle {
+                top: 60px;
+                bottom: 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-areas: 
+                    "header"
+                    "gallery"
+                    "footer";
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px calc(100vh - 160px) 100px;
+            }
+
+            .sidebar, .selection-panel, .resize-handle {
+                display: none;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">L</div>
+                <span>LogoNico Generator</span>
+            </div>
+            
+            <div class="header-center">
+                <div class="selected-info" id="selected-info">
+                    <span id="selected-count">0 selected</span>
+                </div>
+                
+                <div class="provider-status">
+                    <div class="provider-dots" id="provider-dots">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <span id="provider-status">Loading...</span>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <button class="theme-toggle">⚙️</button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Model Status -->
+            <div class="model-status">
+                <div class="status-section">
+                    <div class="status-title">🤖 GENERATION STATUS</div>
+                    <div class="status-value">Total Images: <strong id="total-images">Loading...</strong></div>
+                    <div class="status-value">Providers: <strong id="provider-count">Loading...</strong></div>
+                    <div class="status-value">Models: <strong id="model-count">Loading...</strong></div>
+                    <span class="status-badge complete" id="generation-status">Complete</span>
+                </div>
+
+                <div class="status-section">
+                    <div class="status-title">📝 TOP PROMPTS</div>
+                    <div id="top-prompts">Loading...</div>
+                </div>
+
+                <div class="status-section">
+                    <div class="status-title">🎯 SUCCESS RATE</div>
+                    <div class="model-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="success-progress" style="width: 100%"></div>
+                        </div>
+                        <div class="progress-text" id="success-text">100% Success</div>
+                    </div>
+                </div>
+
+                <div class="status-section">
+                    <div class="status-title">📊 PROVIDERS</div>
+                    <div id="provider-breakdown">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Logs -->
+            <div class="logs">
+                <div class="status-title">📊 RECENT LOGS</div>
+                <div class="logs-content" id="logs-content">
+                    <div class="loading">Loading logs...</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Gallery -->
+        <main class="gallery">
+            <div class="gallery-header">
+                <h2 class="gallery-title">Generated Gallery (<span id="image-count">0</span>)</h2>
+                <div class="gallery-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="success">✓ Success</button>
+                    <button class="filter-btn" data-filter="openai">OpenAI</button>
+                    <button class="filter-btn" data-filter="replicate">Replicate</button>
+                    <button class="filter-btn" data-filter="together_ai">Together AI</button>
+                    <button class="filter-btn" data-filter="fal_ai">Fal.ai</button>
+                </div>
+            </div>
+
+            <div class="gallery-grid" id="gallery-grid">
+                <div class="loading">Loading images...</div>
+            </div>
+        </main>
+
+        <!-- Selection Panel -->
+        <aside class="selection-panel" id="selection-panel">
+            <div class="selection-header">
+            <div class="selection-header">
+                <div class="selection-title">
+                    <span>Selected Images</span>
+                    <span class="clear-selection" id="clear-selection" onclick="clearSelection()">Clear All</span>
+                </div>
+                
+                <div class="selection-actions">
+                    <button class="action-btn" id="remove-bg-btn" onclick="removeBackground()" disabled>
+                        🎭 Remove BG
+                    </button>
+                    <button class="action-btn" id="convert-ico-btn" onclick="convertToICO()" disabled>
+                        🔄 To ICO
+                    </button>
+                </div>
+            </div>
+
+            <div class="selected-images" id="selected-images">
+                <div class="empty-selection">
+                    <div class="empty-icon">🖼️</div>
+                    <div>Click images to select</div>
+                    <div style="margin-top: 8px; font-size: 11px;">Compare and process selected images</div>
+                </div>
+            </div>
+
+            <div class="selection-info" id="selection-info-panel" style="display: none;">
+                <div class="info-line"><strong>Selected Image Info:</strong></div>
+                <div class="info-line">Name: <span id="info-name">-</span></div>
+                <div class="info-line">Model: <span id="info-model">-</span></div>
+                <div class="info-line">Size: <span id="info-size">-</span></div>
+                <div class="info-line">Date: <span id="info-date">-</span></div>
+            </div>
+        </aside>
+
+        <!-- Resize Handle -->
+        <div class="resize-handle" id="resize-handle"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="main-progress">
+                <div class="main-progress-text">
+                    <span><strong>Generation:</strong> <span id="footer-status">Complete</span></span>
+                    <div class="progress-stats">
+                        <span>📸 <span id="total-generated">0</span> images</span>
+                        <span>🎯 <span id="providers-used">0</span> providers</span>
+                        <span>📁 <span id="total-size">0</span> MB</span>
+                    </div>
+                </div>
+                <div class="main-progress-bar">
+                    <div class="main-progress-fill" id="main-progress" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn primary" onclick="refreshData()">🔄 Refresh</button>
+                <button class="control-btn" onclick="openOutputFolder()">📁 Open Folder</button>
+                <button class="control-btn" onclick="downloadSelected()">💾 Download Selected</button>
+                <button class="control-btn" onclick="window.open('/api/logs', '_blank')">📊 View Logs</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let allImages = [];
+        let selectedImages = new Set();
+        let currentFilter = 'all';
+        let hoveredImage = null;
+
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            
+            if (body.getAttribute('data-theme') === 'light') {
+                body.removeAttribute('data-theme');
+                icon.textContent = '🌙';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                icon.textContent = '☀️';
+            }
+        }
+
+        // Load images from API
+        async function loadImages() {
+            try {
+                const response = await fetch('/api/images');
+                const images = await response.json();
+                allImages = images;
+                displayImages(images);
+                updateImageCount(images.length);
+            } catch (error) {
+                console.error('Failed to load images:', error);
+                document.getElementById('gallery-grid').innerHTML = 
+                    '<div class="loading">Failed to load images</div>';
+            }
+        }
+
+        // Display images in gallery
+        function displayImages(images) {
+            const grid = document.getElementById('gallery-grid');
+            
+            if (images.length === 0) {
+                grid.innerHTML = '<div class="loading">No images found</div>';
+                return;
+            }
+
+            grid.innerHTML = images.map(img => `
+                <div class="image-card ${selectedImages.has(img.id) ? 'selected' : ''}" 
+                     data-status="${img.status}" 
+                     data-provider="${img.provider}"
+                     data-image-id="${img.id}"
+                     onclick="toggleImageSelection('${img.id}')"
+                     onmouseenter="showImageInfo('${img.id}')"
+                     onmouseleave="hideImageInfo()">
+                    <img src="${img.url}" alt="${img.prompt_id}" class="image-display" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                    <div class="image-placeholder" style="display: none;">🖼️</div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle image selection
+        function toggleImageSelection(imageId) {
+            if (selectedImages.has(imageId)) {
+                selectedImages.delete(imageId);
+            } else {
+                selectedImages.add(imageId);
+            }
+            
+            updateSelectionDisplay();
+            updateGallerySelection();
+            updateActionButtons();
+        }
+
+        // Update gallery selection visual state
+        function updateGallerySelection() {
+            document.querySelectorAll('.image-card').forEach(card => {
+                const imageId = card.getAttribute('data-image-id');
+                if (selectedImages.has(imageId)) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+
+        // Update selection panel display
+        function updateSelectionDisplay() {
+            const selectedImagesContainer = document.getElementById('selected-images');
+            const selectedCount = document.getElementById('selected-count');
+            
+            selectedCount.textContent = `${selectedImages.size} selected`;
+            
+            if (selectedImages.size === 0) {
+                selectedImagesContainer.innerHTML = `
+                    <div class="empty-selection">
+                        <div class="empty-icon">🖼️</div>
+                        <div>Click images to select</div>
+                        <div style="margin-top: 8px; font-size: 11px;">Compare and process selected images</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const selectedImageData = allImages.filter(img => selectedImages.has(img.id));
+            
+            selectedImagesContainer.innerHTML = selectedImageData.map(img => `
+                <div class="selected-image-card" 
+                     onmouseenter="showImageInfo('${img.id}')"
+                     onmouseleave="hideImageInfo()">
+                    <img src="${img.url}" alt="${img.prompt_id}" class="selected-image-display">
+                    <div class="selected-image-status">✓</div>
+                    <div class="remove-selected" onclick="toggleImageSelection('${img.id}')" title="Remove from selection">×</div>
+                </div>
+            `).join('');
+            
+            // Update panel sizing after content changes
+            setTimeout(updateSelectionPanelSize, 100);
+        }
+
+        // Show image info in sidebar
+        function showImageInfo(imageId) {
+            const image = allImages.find(img => img.id === imageId);
+            if (!image) return;
+
+            const infoPanel = document.getElementById('selection-info-panel');
+            document.getElementById('info-name').textContent = image.prompt_id;
+            document.getElementById('info-model').textContent = `${image.provider}:${image.model}`;
+            document.getElementById('info-size').textContent = `${image.size_mb}MB`;
+            document.getElementById('info-date').textContent = image.created_at;
+            
+            infoPanel.style.display = 'block';
+            hoveredImage = imageId;
+        }
+
+        // Hide image info
+        function hideImageInfo() {
+            if (!selectedImages.size) {
+                document.getElementById('selection-info-panel').style.display = 'none';
+            }
+            hoveredImage = null;
+        }
+
+        // Update action buttons state
+        function updateActionButtons() {
+            const removeBgBtn = document.getElementById('remove-bg-btn');
+            const convertIcoBtn = document.getElementById('convert-ico-btn');
+            
+            const hasSelection = selectedImages.size > 0;
+            removeBgBtn.disabled = !hasSelection;
+            convertIcoBtn.disabled = !hasSelection;
+        }
+
+        // Clear all selections
+        function clearSelection() {
+            selectedImages.clear();
+            updateSelectionDisplay();
+            updateGallerySelection();
+            updateActionButtons();
+            hideImageInfo();
+        }
+
+        // Action functions (placeholders)
+        function removeBackground() {
+            if (selectedImages.size === 0) return;
+            
+            const selectedImageData = allImages.filter(img => selectedImages.has(img.id));
+            console.log('Remove background for:', selectedImageData.map(img => img.filename));
+            
+            // Placeholder: Show confirmation
+            alert(`Remove background from ${selectedImages.size} selected images?\n(Feature not implemented yet)`);
+        }
+
+        function convertToICO() {
+            if (selectedImages.size === 0) return;
+            
+            const selectedImageData = allImages.filter(img => selectedImages.has(img.id));
+            console.log('Convert to ICO:', selectedImageData.map(img => img.filename));
+            
+            // Placeholder: Show confirmation
+            alert(`Convert ${selectedImages.size} selected images to ICO format?\n(Feature not implemented yet)`);
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                document.getElementById('total-images').textContent = stats.total_images;
+                document.getElementById('provider-count').textContent = Object.keys(stats.providers).length;
+                document.getElementById('model-count').textContent = Object.keys(stats.models).length;
+                document.getElementById('total-generated').textContent = stats.total_images;
+                document.getElementById('providers-used').textContent = Object.keys(stats.providers).length;
+                
+                // Calculate total size
+                const totalSize = allImages.reduce((sum, img) => sum + img.size_mb, 0);
+                document.getElementById('total-size').textContent = totalSize.toFixed(1);
+                
+                // Update provider status
+                updateProviderStatus(stats.providers);
+                
+                // Update top prompts
+                updateTopPrompts(stats.prompts);
+                
+                // Update provider breakdown
+                updateProviderBreakdown(stats.providers);
+                
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Update provider status dots
+        function updateProviderStatus(providers) {
+            const dots = document.querySelectorAll('.dot');
+            const providerNames = Object.keys(providers);
+            
+            document.getElementById('provider-status').textContent = 
+                `${providerNames.length}/4 Providers`;
+            
+            // Update dots based on providers that have images
+            dots.forEach((dot, index) => {
+                if (index < providerNames.length) {
+                    dot.className = 'dot';
+                } else {
+                    dot.className = 'dot failed';
+                }
+            });
+        }
+
+        // Update top prompts display
+        function updateTopPrompts(prompts) {
+            const topPromptsEl = document.getElementById('top-prompts');
+            const sortedPrompts = Object.entries(prompts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+            
+            topPromptsEl.innerHTML = sortedPrompts.map(([prompt, count]) => 
+                `<div class="status-value" style="font-size: 12px;">• ${prompt}: ${count}</div>`
+            ).join('');
+        }
+
+        // Update provider breakdown
+        function updateProviderBreakdown(providers) {
+            const breakdownEl = document.getElementById('provider-breakdown');
+            
+            breakdownEl.innerHTML = Object.entries(providers).map(([provider, count]) => 
+                `<div class="status-value" style="font-size: 12px;">• ${provider}: ${count}</div>`
+            ).join('');
+        }
+
+        // Load logs
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const logs = await response.json();
+                
+                const logsContent = document.getElementById('logs-content');
+                logsContent.innerHTML = logs.map(log => `
+                    <div class="log-entry">
+                        <span class="log-time">${log.time}</span>
+                        <span class="log-status">${log.status}</span>
+                        <span class="log-message">${log.message}</span>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Failed to load logs:', error);
+                document.getElementById('logs-content').innerHTML = 
+                    '<div class="loading">Failed to load logs</div>';
+            }
+        }
+
+        // Update image count
+        function updateImageCount(count) {
+            document.getElementById('image-count').textContent = count;
+        }
+
+        // Gallery filtering
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active filter
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Filter images
+                const filter = btn.getAttribute('data-filter');
+                currentFilter = filter;
+                
+                let filteredImages = allImages;
+                if (filter !== 'all') {
+                    filteredImages = allImages.filter(img => 
+                        img.status === filter || img.provider === filter
+                    );
+                }
+                
+                displayImages(filteredImages);
+                updateImageCount(filteredImages.length);
+            });
+        });
+
+        // Control functions
+        function refreshData() {
+            loadImages();
+            loadStats();
+            loadLogs();
+        }
+
+        function openOutputFolder() {
+            // This would need backend implementation
+            alert('Opening output folder...');
+        }
+
+        function downloadSelected() {
+            if (selectedImages.size === 0) {
+                alert('No images selected');
+                return;
+            }
+            
+            const selectedImageData = allImages.filter(img => selectedImages.has(img.id));
+            console.log('Download selected:', selectedImageData.map(img => img.filename));
+            alert(`Download ${selectedImages.size} selected images?\n(Feature not implemented yet)`);
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadImages();
+            loadStats();
+            loadLogs();
+            setupResizeHandle();
+            updateSelectionPanelSize();
+            
+            // Refresh data every 30 seconds
+            setInterval(refreshData, 30000);
+        });
+
+        // Resize handle functionality
+        function setupResizeHandle() {
+            const resizeHandle = document.getElementById('resize-handle');
+            const container = document.querySelector('.container');
+            let isResizing = false;
+            let startX = 0;
+            let startGalleryWidth = 0;
+            let startSelectionWidth = 0;
+
+            // Position resize handle initially
+            positionResizeHandle();
+
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                
+                const containerRect = container.getBoundingClientRect();
+                const currentColumns = container.style.gridTemplateColumns || getComputedStyle(container).gridTemplateColumns;
+                
+                resizeHandle.classList.add('dragging');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+
+                const containerRect = container.getBoundingClientRect();
+                const containerWidth = containerRect.width;
+                const deltaX = e.clientX - startX;
+                
+                // Calculate new widths
+                const sidebarWidth = window.innerWidth > 1200 ? 280 : 0;
+                const availableWidth = containerWidth - sidebarWidth - 2; // 2px for gaps
+                
+                const currentSelectionWidth = parseFloat(getComputedStyle(container).gridTemplateColumns.split(' ')[2]) || 400;
+                const currentGalleryWidth = availableWidth - currentSelectionWidth;
+                
+                let newSelectionWidth = currentSelectionWidth - deltaX;
+                let newGalleryWidth = currentGalleryWidth + deltaX;
+                
+                // Enforce minimum and maximum widths (25% to 50% of available width)
+                const minWidth = availableWidth * 0.25;
+                const maxWidth = availableWidth * 0.5;
+                
+                newSelectionWidth = Math.max(minWidth, Math.min(maxWidth, newSelectionWidth));
+                newGalleryWidth = availableWidth - newSelectionWidth;
+                
+                // Update grid template columns
+                if (window.innerWidth > 1200) {
+                    container.style.gridTemplateColumns = `280px ${newGalleryWidth}px ${newSelectionWidth}px`;
+                } else {
+                    container.style.gridTemplateColumns = `${newGalleryWidth}px ${newSelectionWidth}px`;
+                }
+                
+                positionResizeHandle();
+                updateSelectionPanelSize();
+                
+                e.preventDefault();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    resizeHandle.classList.remove('dragging');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                positionResizeHandle();
+                updateSelectionPanelSize();
+            });
+        }
+
+        function positionResizeHandle() {
+            const container = document.querySelector('.container');
+            const resizeHandle = document.getElementById('resize-handle');
+            const containerRect = container.getBoundingClientRect();
+            
+            const currentColumns = getComputedStyle(container).gridTemplateColumns.split(' ');
+            let galleryEndPosition;
+            
+            if (window.innerWidth > 1200) {
+                // sidebar + gallery widths
+                const sidebarWidth = parseFloat(currentColumns[0]);
+                const galleryWidth = parseFloat(currentColumns[1]);
+                galleryEndPosition = sidebarWidth + galleryWidth + 1; // +1 for gap
+            } else {
+                // just gallery width
+                const galleryWidth = parseFloat(currentColumns[0]);
+                galleryEndPosition = galleryWidth;
+            }
+            
+            resizeHandle.style.left = galleryEndPosition + 'px';
+        }
+
+        function updateSelectionPanelSize() {
+            const selectionPanel = document.getElementById('selection-panel');
+            const panelWidth = selectionPanel.offsetWidth;
+            
+            // Update panel size class for responsive grid
+            if (panelWidth < 300) {
+                selectionPanel.setAttribute('data-width', 'small');
+            } else if (panelWidth < 400) {
+                selectionPanel.setAttribute('data-width', 'medium');
+            } else if (panelWidth < 500) {
+                selectionPanel.setAttribute('data-width', 'large');
+            } else {
+                selectionPanel.setAttribute('data-width', 'xlarge');
+            }
+        }
+    </script>
+</body>
+</html>

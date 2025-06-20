@@ -342,3 +342,284 @@ dmypy.json
 # personal_prompts.json
 # my_api_keys.txt
 # custom_models.py
+
+# ===========================
+# REACT/NODE.JS FRONTEND
+# ===========================
+
+# Dependencies
+logonico-ui/node_modules/
+logonico-ui/npm-debug.log*
+logonico-ui/yarn-debug.log*
+logonico-ui/yarn-error.log*
+logonico-ui/lerna-debug.log*
+
+# Runtime data
+logonico-ui/pids
+logonico-ui/*.pid
+logonico-ui/*.seed
+logonico-ui/*.pid.lock
+
+# Build outputs
+logonico-ui/build/
+logonico-ui/dist/
+logonico-ui/.next/
+logonico-ui/out/
+
+# React build artifacts
+logonico-ui/build/
+logonico-ui/.build/
+logonico-ui/public/build/
+
+# Storybook build outputs
+logonico-ui/storybook-static/
+
+# Testing
+logonico-ui/coverage/
+logonico-ui/.nyc_output
+logonico-ui/.coverage/
+logonico-ui/test-results/
+logonico-ui/junit.xml
+
+# Jest coverage
+logonico-ui/coverage/
+logonico-ui/lcov.info
+
+# ESLint cache
+logonico-ui/.eslintcache
+
+# Prettier cache
+logonico-ui/.prettiercache
+
+# TypeScript cache
+logonico-ui/*.tsbuildinfo
+
+# Optional npm cache directory
+logonico-ui/.npm
+
+# Optional eslint cache
+logonico-ui/.eslintcache
+
+# Microbundle cache
+logonico-ui/.rpt2_cache/
+logonico-ui/.rts2_cache_cjs/
+logonico-ui/.rts2_cache_es/
+logonico-ui/.rts2_cache_umd/
+
+# Optional REPL history
+logonico-ui/.node_repl_history
+
+# Output of 'npm pack'
+logonico-ui/*.tgz
+
+# Yarn Integrity file
+logonico-ui/.yarn-integrity
+
+# Yarn v2
+logonico-ui/.yarn/cache
+logonico-ui/.yarn/unplugged
+logonico-ui/.yarn/build-state.yml
+logonico-ui/.yarn/install-state.gz
+logonico-ui/.pnp.*
+
+# parcel-bundler cache (https://parceljs.org/)
+logonico-ui/.cache
+logonico-ui/.parcel-cache
+
+# Webpack cache
+logonico-ui/.webpack/
+
+# Rollup cache
+logonico-ui/.rollup.cache/
+
+# SvelteKit build / generate output
+logonico-ui/.svelte-kit
+
+# Next.js build output
+logonico-ui/.next
+
+# Nuxt.js build / generate output
+logonico-ui/.nuxt
+logonico-ui/dist
+
+# Gatsby files
+logonico-ui/.cache/
+logonico-ui/public
+
+# Vuepress build output
+logonico-ui/.vuepress/dist
+
+# Serverless directories
+logonico-ui/.serverless/
+
+# FuseBox cache
+logonico-ui/.fusebox/
+
+# DynamoDB Local files
+logonico-ui/.dynamodb/
+
+# TernJS port file
+logonico-ui/.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+logonico-ui/.vscode-test
+
+# ===========================
+# ENVIRONMENT & CONFIG
+# ===========================
+
+# Environment variables
+logonico-ui/.env
+logonico-ui/.env.local
+logonico-ui/.env.development.local
+logonico-ui/.env.test.local
+logonico-ui/.env.production.local
+
+# Local environment files
+logonico-ui/.env*.local
+
+# ===========================
+# IDE/EDITOR SPECIFIC
+# ===========================
+
+# VSCode
+logonico-ui/.vscode/
+logonico-ui/*.code-workspace
+
+# JetBrains IDEs
+logonico-ui/.idea/
+logonico-ui/*.iws
+logonico-ui/*.iml
+logonico-ui/*.ipr
+
+# Sublime Text
+logonico-ui/*.sublime-project
+logonico-ui/*.sublime-workspace
+
+# Vim
+logonico-ui/*.swp
+logonico-ui/*.swo
+logonico-ui/*~
+
+# Emacs
+logonico-ui/*~
+logonico-ui/\#*\#
+logonico-ui/.emacs.desktop
+logonico-ui/.emacs.desktop.lock
+logonico-ui/*.elc
+logonico-ui/auto-save-list
+logonico-ui/tramp
+logonico-ui/.\#*
+
+# Atom
+logonico-ui/.atom/
+
+# ===========================
+# LOGS & TEMPORARY FILES
+# ===========================
+
+# Logs
+logonico-ui/logs
+logonico-ui/*.log
+logonico-ui/npm-debug.log*
+logonico-ui/yarn-debug.log*
+logonico-ui/yarn-error.log*
+logonico-ui/lerna-debug.log*
+
+# Temporary files
+logonico-ui/tmp/
+logonico-ui/temp/
+logonico-ui/.tmp/
+logonico-ui/.temp/
+
+# ===========================
+# DEPLOYMENT & CI/CD
+# ===========================
+
+# Netlify
+logonico-ui/.netlify/
+
+# Vercel
+logonico-ui/.vercel
+
+# Firebase
+logonico-ui/.firebase/
+logonico-ui/firebase-debug.log
+
+# Surge.sh
+logonico-ui/CNAME
+
+# Heroku
+logonico-ui/Procfile
+
+# ===========================
+# PACKAGE MANAGER LOCKS
+# (Keep these for reproducible builds)
+# ===========================
+
+# Uncomment if you want to ignore lock files
+# logonico-ui/package-lock.json
+# logonico-ui/yarn.lock
+# logonico-ui/pnpm-lock.yaml
+
+# ===========================
+# MISC FRONTEND ARTIFACTS
+# ===========================
+
+# Webpack Bundle Analyzer
+logonico-ui/bundle-analyzer-report.html
+
+# Source maps (uncomment if you don't want to track them)
+# logonico-ui/**/*.map
+
+# Sentry
+logonico-ui/.sentryclirc
+
+# PWA files
+logonico-ui/sw.js
+logonico-ui/workbox-*.js
+
+# Service worker
+logonico-ui/service-worker.js
+
+# Web App Manifest (if generated)
+logonico-ui/asset-manifest.json
+
+# ===========================
+# SASS/SCSS CACHE
+# ===========================
+logonico-ui/.sass-cache/
+logonico-ui/*.css.map
+logonico-ui/*.scss.map
+
+# ===========================
+# STYLED-COMPONENTS
+# ===========================
+logonico-ui/.styled-components/
+
+# ===========================
+# REACT SPECIFIC
+# ===========================
+
+# React Hot Loader
+logonico-ui/.hot-update.*
+
+# Create React App
+logonico-ui/build/static/js/*.map
+logonico-ui/build/static/css/*.map
+
+# React DevTools
+logonico-ui/.react-devtools
+
+# ===========================
+# PERFORMANCE MONITORING
+# ===========================
+
+# Lighthouse CI
+logonico-ui/.lighthouseci/
+
+# Bundle size analysis
+logonico-ui/bundle-analysis/
+
+# Performance budgets
+logonico-ui/.size-limit.json

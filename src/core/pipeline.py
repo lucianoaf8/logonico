@@ -1,3 +1,4 @@
+# src/core/pipeline.py - Modified with fail-fast logic
 """
 Main pipeline orchestrator for image generation and processing
 """
@@ -5,9 +6,10 @@ Main pipeline orchestrator for image generation and processing
 import logging
 import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Set
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
+from collections import defaultdict
 
 from .config import Config
 from .models import model_registry
@@ -25,6 +27,9 @@ class GenerationPipeline:
         self.background_remover = None
         self.ico_converter = None
         self.image_optimizer = None
+        
+        # Fail-fast tracking
+        self.failed_models: Set[str] = set()  # Track failed provider:model combinations
         
         # Ensure directories exist
         Config.ensure_directories()
@@ -69,6 +74,9 @@ class GenerationPipeline:
         
         start_time = time.time()
         
+        # Reset failed models tracking
+        self.failed_models.clear()
+        
         # Load prompts
         prompt_data = load_prompts(Config.get_prompts_file())
         
@@ -110,59 +118,132 @@ class GenerationPipeline:
                     "model": model
                 })
         
-        # Execute generations in parallel
-        results = self._execute_generation_tasks(generation_tasks, max_workers or Config.MAX_WORKERS)
+        # Execute generations with fail-fast logic
+        results = self._execute_generation_tasks_failfast(generation_tasks, max_workers or Config.MAX_WORKERS)
         
         # Collect statistics
         total_time = time.time() - start_time
         successful = len([r for r in results if r.success])
         failed = len(results) - successful
+        skipped = len(generation_tasks) - len(results)
         
         stats = {
             "total_tasks": len(generation_tasks),
+            "executed": len(results),
+            "skipped": skipped,
             "successful": successful,
             "failed": failed,
             "success_rate": successful / len(results) if results else 0,
             "total_time": total_time,
             "avg_time_per_image": total_time / len(results) if results else 0,
+            "failed_models": list(self.failed_models),
             "results": results
         }
         
-        self.logger.info(f"Generation complete: {successful}/{len(results)} successful in {total_time:.1f}s")
+        self.logger.info(f"Generation complete: {successful}/{len(results)} successful, {skipped} skipped, in {total_time:.1f}s")
+        if self.failed_models:
+            self.logger.info(f"Failed models (skipped subsequent prompts): {', '.join(self.failed_models)}")
         
         return stats
     
-    def _execute_generation_tasks(self, tasks: List[Dict], max_workers: int) -> List[Any]:
-        """Execute generation tasks in parallel"""
+    def _execute_generation_tasks_failfast(self, tasks: List[Dict], max_workers: int) -> List[Any]:
+        """Execute generation tasks with fail-fast logic for failed models"""
         
         results = []
         
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all tasks
-            future_to_task = {}
-            for task in tasks:
-                future = executor.submit(self._generate_single_image, task)
-                future_to_task[future] = task
+        # Group tasks by provider:model for fail-fast logic
+        tasks_by_model = defaultdict(list)
+        for task in tasks:
+            model_key = f"{task['provider']}:{task['model']}"
+            tasks_by_model[model_key].append(task)
+        
+        # Process each model group
+        for model_key, model_tasks in tasks_by_model.items():
+            if model_key in self.failed_models:
+                self.logger.info(f"Skipping {len(model_tasks)} tasks for failed model: {model_key}")
+                continue
             
-            # Collect results as they complete
-            for future in as_completed(future_to_task):
-                task = future_to_task[future]
-                try:
-                    result = future.result()
-                    results.append(result)
-                except Exception as e:
-                    self.logger.error(f"Task failed: {task['provider']}:{task['model']} {task['prompt']['id']} - {e}")
-                    # Create failed result
-                    from ..generators.base import GenerationResult
-                    failed_result = GenerationResult(
-                        success=False,
-                        prompt_id=task['prompt']['id'],
-                        model=f"{task['provider']}:{task['model']}",
-                        error=str(e)
-                    )
-                    results.append(failed_result)
+            self.logger.info(f"Processing {len(model_tasks)} tasks for model: {model_key}")
+            
+            # Try first task for this model
+            first_task = model_tasks[0]
+            first_result = self._generate_single_image(first_task)
+            results.append(first_result)
+            
+            # If first task failed with certain errors, skip remaining tasks for this model
+            if not first_result.success and self._should_skip_model(first_result.error):
+                self.failed_models.add(model_key)
+                self.logger.warning(f"Model {model_key} failed with: {first_result.error}")
+                self.logger.warning(f"Skipping remaining {len(model_tasks) - 1} tasks for this model")
+                continue
+            
+            # If first task succeeded or failed with a non-fatal error, process remaining tasks
+            if len(model_tasks) > 1:
+                remaining_tasks = model_tasks[1:]
+                
+                with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                    # Submit remaining tasks for this model
+                    future_to_task = {}
+                    for task in remaining_tasks:
+                        # Double-check model hasn't failed while we were processing
+                        if model_key not in self.failed_models:
+                            future = executor.submit(self._generate_single_image, task)
+                            future_to_task[future] = task
+                    
+                    # Collect results
+                    for future in as_completed(future_to_task):
+                        task = future_to_task[future]
+                        try:
+                            result = future.result()
+                            results.append(result)
+                            
+                            # Check if this result should cause us to skip future tasks
+                            if not result.success and self._should_skip_model(result.error):
+                                self.failed_models.add(model_key)
+                                self.logger.warning(f"Model {model_key} failed during batch, marking as failed")
+                                
+                        except Exception as e:
+                            self.logger.error(f"Task execution failed: {task['provider']}:{task['model']} {task['prompt']['id']} - {e}")
+                            # Create failed result
+                            from ..generators.base import GenerationResult
+                            failed_result = GenerationResult(
+                                success=False,
+                                prompt_id=task['prompt']['id'],
+                                model=f"{task['provider']}:{task['model']}",
+                                error=str(e)
+                            )
+                            results.append(failed_result)
         
         return results
+    
+    def _should_skip_model(self, error_message: str) -> bool:
+        """Determine if an error should cause us to skip remaining tasks for a model"""
+        if not error_message:
+            return False
+        
+        error_lower = error_message.lower()
+        
+        # Rate limiting errors
+        if "rate limit" in error_lower or "429" in error_lower:
+            return True
+        
+        # Authentication errors
+        if "unauthorized" in error_lower or "401" in error_lower or "invalid api key" in error_lower:
+            return True
+        
+        # Quota exceeded errors
+        if "quota" in error_lower or "insufficient" in error_lower:
+            return True
+        
+        # Service unavailable errors
+        if "503" in error_lower or "service unavailable" in error_lower:
+            return True
+        
+        # Model not found or unavailable
+        if "model not found" in error_lower or "404" in error_lower:
+            return True
+        
+        return False
     
     def _generate_single_image(self, task: Dict) -> Any:
         """Generate a single image"""
@@ -283,7 +364,9 @@ class GenerationPipeline:
                 "images_generated": generation_stats["successful"],
                 "images_processed": len(processing_results["processed"]),
                 "ico_files_created": len(processing_results["icons"]),
-                "total_time": generation_stats["total_time"]
+                "total_time": generation_stats["total_time"],
+                "failed_models": generation_stats["failed_models"],
+                "tasks_skipped": generation_stats["skipped"]
             }
         }
         
