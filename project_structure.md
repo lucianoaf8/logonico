@@ -98,13 +98,9 @@
 |-- [DIR] (empty) tests
 |-- [FILE].gitignore
 |-- [PY]  app.py
-|-- [MD]  Logonico - Windows Setup Guide.md
 |-- [PY]  main.py
 |-- [MD]  modularization.md
 |-- [MD]  project_review_assessment.md
-|-- [MD]  project_structure.md
-|-- [MD]  project-review-checlist.md
-|-- [SCRIPT]react-setup.ps1
 |-- [MD]  README.md
 |-- [TXT] requirements.txt
 |-- [PY]  setup.py
@@ -113,5 +109,5 @@
 
 ## Summary
 
-- **Total Items Displayed**: 107
+- **Total Items Displayed**: 103
 - **Project Root**: `C:\Projects\logonico`
