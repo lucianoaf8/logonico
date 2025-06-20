@@ -3,7 +3,7 @@ import Header from '../Header/Header';
 import Sidebar from '../Sidebar/Sidebar';
 import Gallery from '../Gallery/Gallery';
 import SelectionPanel from '../SelectionPanel/SelectionPanel';
-import ResizeHandle from '../common/ResizeHandle';
+import ResizeHandle from '../Gallery/ResizeHandle'; // Fixed: Changed from ../common/ResizeHandle
 import Footer from '../Footer/Footer';
 
 export default function AppLayout({ onToggleTheme }) {

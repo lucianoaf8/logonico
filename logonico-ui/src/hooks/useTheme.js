@@ -1,10 +1,19 @@
 import { useState, useEffect } from 'react';
 
 export default function useTheme() {
-  const [theme,setTheme] = useState('dark');
-  useEffect(()=>{
-    document.body.setAttribute('data-theme', theme==='light'?'light':'');
-    // swap icon handled in Header
-  },[theme]);
-  return [theme, ()=>setTheme(t=>t==='light'?'dark':'light')];
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    // Load theme from localStorage
+    const savedTheme = localStorage.getItem('logonico-theme') || 'dark';
+    setTheme(savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('logonico-theme', newTheme);
+  };
+
+  return [theme, toggleTheme];
 }

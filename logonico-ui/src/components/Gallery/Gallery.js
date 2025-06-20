@@ -4,7 +4,7 @@ import ImageCard from '../common/ImageCard';
 import FilterButton from '../common/FilterButton';
 
 export default function Gallery() {
-  const { allImages, selectedImages, setSelectedImages, stats } = useAppState();
+  const { allImages, selectedImages, setSelectedImages } = useAppState(); // Removed unused 'stats'
   const [filter,setFilter] = React.useState('all');
 
   const filtered = allImages.filter(img=>{

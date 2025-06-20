@@ -1,18 +1,29 @@
 import React from 'react';
 
-export default function ImageCard({img,selected,onClick}) {
+export default function ImageCard({ img, selected, onClick }) {
   return (
-    <div
-      className={`image-card ${selected?'selected':''}`}
-      data-status={img.status}
-      data-provider={img.provider}
+    <div 
+      className={`image-card ${selected ? 'selected' : ''}`}
       onClick={onClick}
-      onMouseEnter={()=>{/* could call info hook */}}
-      onMouseLeave={()=>{}}
+      title={`${img.prompt_id} - ${img.provider}:${img.model}`}
     >
-      <img src={img.url} alt={img.prompt_id} className="image-display"
-           onError={e=>{e.currentTarget.style.display='none';}}/>
-      <div className="image-placeholder">🖼️</div>
+      <img 
+        src={img.url} 
+        alt={img.prompt_id}
+        className="image-display"
+        loading="lazy"
+      />
+      {selected && (
+        <div className="selection-indicator">
+          ✓
+        </div>
+      )}
+      <div className="image-overlay">
+        <div className="image-info">
+          <div className="image-provider">{img.provider}</div>
+          <div className="image-size">{img.size_mb}MB</div>
+        </div>
+      </div>
     </div>
   );
 }

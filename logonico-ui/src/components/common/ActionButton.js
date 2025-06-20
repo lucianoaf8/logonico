@@ -1,7 +1,13 @@
 import React from 'react';
-export default function ActionButton({onClick,disabled,children}) {
+
+export default function ActionButton({ onClick, disabled, children, className, ...props }) {
   return (
-    <button className="action-btn" disabled={disabled} onClick={onClick}>
+    <button 
+      className={`action-btn ${className || ''} ${disabled ? 'disabled' : ''}`}
+      onClick={onClick}
+      disabled={disabled}
+      {...props}
+    >
       {children}
     </button>
   );

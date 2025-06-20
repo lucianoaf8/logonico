@@ -4,52 +4,60 @@ import { useAppState } from '../../hooks/useAppState';
 export default function Sidebar() {
   const { stats, logs } = useAppState();
 
+  const totalImages = stats.total_images || 0;
+  const providers = stats.providers || {};
+  const models = stats.models || {};
+
   return (
     <aside className="sidebar">
       <div className="model-status">
         <div className="status-section">
-          <div className="status-title">🤖 GENERATION STATUS</div>
-          <div className="status-value">Total Images: <strong>{stats.total_images}</strong></div>
-          <div className="status-value">Providers: <strong>{Object.keys(stats.providers||{}).length}</strong></div>
-          <div className="status-value">Models: <strong>{Object.keys(stats.models||{}).length}</strong></div>
-          <span className="status-badge complete">Complete</span>
-        </div>
-        <div className="status-section">
-          <div className="status-title">📝 TOP PROMPTS</div>
-          <div className="prompt-preview">
-            {(stats.prompts||[]).slice(0,3).map(([p,c])=>(
-              <div key={p} className="status-value">• {p}: {c}</div>
-            ))}
-          </div>
-        </div>
-        <div className="status-section">
-          <div className="status-title">🎯 SUCCESS RATE</div>
-          <div className="model-progress">
-            <div className="progress-bar">
-              <div className="progress-fill" style={{width: stats.success_rate+'%'}} />
+          <div className="status-title">📊 Statistics</div>
+          <div className="status-stats">
+            <div className="stat-item">
+              <span className="stat-label">Total Images</span>
+              <span className="stat-value">{totalImages}</span>
             </div>
-            <div className="progress-text">{stats.success_rate}% Success</div>
+            <div className="stat-item">
+              <span className="stat-label">Providers</span>
+              <span className="stat-value">{Object.keys(providers).length}/4</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Models</span>
+              <span className="stat-value">{Object.keys(models).length}</span>
+            </div>
           </div>
         </div>
+
         <div className="status-section">
-          <div className="status-title">📊 PROVIDERS</div>
-          <div id="provider-breakdown">
-            {Object.entries(stats.providers||{}).map(([prov,c])=>(
-              <div key={prov} className="status-value">• {prov}: {c}</div>
+          <div className="status-title">🤖 Providers</div>
+          <div className="provider-grid">
+            {Object.entries(providers).map(([name, count]) => (
+              <div key={name} className="provider-item">
+                <div className="provider-dot active"></div>
+                <span className="provider-name">{name}</span>
+                <span className="provider-count">{count}</span>
+              </div>
             ))}
           </div>
         </div>
       </div>
-      <div className="logs">
-        <div className="status-title">📊 RECENT LOGS</div>
+
+      <div className="logs-section">
+        <div className="logs-header">
+          <div className="status-title">📄 Recent Logs</div>
+        </div>
         <div className="logs-content">
-          {logs.map((l,i)=>(
-            <div key={i} className="log-entry">
-              <span className="log-time">{l.time}</span>
-              <span className="log-status">{l.status}</span>
-              <span className="log-message">{l.message}</span>
+          {logs.slice(0, 10).map((log, index) => (
+            <div key={index} className="log-entry">
+              <span className="log-time">{log.time}</span>
+              <span className="log-status">{log.status}</span>
+              <span className="log-message">{log.message}</span>
             </div>
           ))}
+          {!logs.length && (
+            <div className="loading">No logs available</div>
+          )}
         </div>
       </div>
     </aside>
